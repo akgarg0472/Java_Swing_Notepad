@@ -11,4 +11,4 @@ Although this is not the best notepad implementation and there are many improvem
 
 Any updation in code is heartly welcomed.
 
-So all the very best to everyone and thank you for reading this♥
+So all the very best to everyone and thank you for reading this ♥.

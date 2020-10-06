@@ -10,3 +10,5 @@ Notepad class contains the main implementation and FontSelector class is used fo
 Although this is not the best notepad implementation and there are many improvements which can be done in the code but it totally depends on you that how you can optimize this code better than my code.
 
 Any updation in code is heartly welcomed.
+
+So all the very best to everyone and thank you for reading this♥

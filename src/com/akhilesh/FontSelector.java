@@ -74,6 +74,7 @@ class FontSelector {
                 "Trebuchet MS",
                 "Verdana"
         };
+//        String[] fontNameArray = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         JPanel fontNamePanel = new JPanel();
         fontNamePanel.setBackground(Color.WHITE);
 

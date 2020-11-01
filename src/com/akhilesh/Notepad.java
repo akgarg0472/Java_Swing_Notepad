@@ -1,5 +1,7 @@
 package com.akhilesh;
 
+import com.sun.java.swing.plaf.motif.MotifScrollBarUI;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -10,11 +12,13 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class Notepad {
 
     static JTextArea textArea = null;
     private static JFrame frame = null;
+    private static JMenuBar notepadMenuBar = null;
     private static JMenuBar menuBar = null;
     private static JMenu fileMenu = null;
     private static JMenuItem newMenuItem = null;
@@ -32,15 +36,20 @@ public class Notepad {
     private static JMenu formatMenu = null;
     private static JCheckBoxMenuItem wordWrapMenuItem = null;
     private static JMenuItem fontMenuItem = null;
+    private static JMenu themeMenu = null;
+    private static JMenuItem lightTheme = null;
+    private static JMenuItem darkTheme = null;
     private static JMenu helpMenu = null;
     private static JMenuItem helpMenuItem = null;
     private static JMenuItem aboutMenuItem = null;
     private static JScrollPane scrollPane = null;
     private static JTextArea rowsCountTextArea = null;
-
+    private static JPanel bottomPanel = null;
+    private static JLabel bottomLabel = null;
     private static UndoManager undoManager = null;
-
     private static boolean isTextAreaContentEdited; // by default value is false
+    private static ArrayList<Color> defaultColors = null;
+    private static Color defaultScrollColor = null;
 
     public static void main(String[] args) {
         frame = new JFrame();
@@ -62,13 +71,56 @@ public class Notepad {
         rowsCountTextArea = new JTextArea(" "); // just giving little bit space in left side of the textArea (only for good visuals, nothing else)
         rowsCountTextArea.setEditable(false);   // disabling editing of textArea
 
-        frame.add(getNotepadMenuBar(), BorderLayout.NORTH);    //adding menuBar with menuItems
+        notepadMenuBar = getNotepadMenuBar();
+        frame.add(notepadMenuBar, BorderLayout.NORTH);    //adding menuBar with menuItems
         frame.add(scrollPane, BorderLayout.CENTER);
         frame.add(rowsCountTextArea, BorderLayout.WEST);
-        JLabel jTextArea = new JLabel("© Akhilesh Garg");
-        jTextArea.setHorizontalAlignment(SwingConstants.CENTER);
-        jTextArea.setFocusable(false);
-        frame.add(jTextArea, BorderLayout.SOUTH);
+
+        bottomPanel = new JPanel();
+        bottomLabel = new JLabel("© Akhilesh Garg");
+        bottomLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bottomLabel.setFocusable(false);
+        bottomPanel.add(bottomLabel);
+        frame.add(bottomPanel, BorderLayout.SOUTH);
+
+        if (defaultScrollColor == null) {
+            scrollPane.getVerticalScrollBar().setUI(new MotifScrollBarUI() {
+                @Override
+                protected void configureScrollBarColors() {
+                    super.configureScrollBarColors();
+                    defaultScrollColor = thumbColor;
+                }
+            });
+            scrollPane.getHorizontalScrollBar().setUI(new MotifScrollBarUI() {
+                @Override
+                protected void configureScrollBarColors() {
+                    super.configureScrollBarColors();
+                    defaultScrollColor = thumbColor;
+                }
+            });
+        }
+
+        if (defaultColors == null) {
+            defaultColors = new ArrayList<>();
+            defaultColors.add(textArea.getBackground());
+            defaultColors.add(notepadMenuBar.getBackground());
+            defaultColors.add(fileMenu.getBackground());
+            defaultColors.add(bottomPanel.getBackground());
+            defaultColors.add(bottomLabel.getBackground());
+            defaultColors.add(rowsCountTextArea.getBackground());
+
+            defaultColors.add(textArea.getCaretColor());
+
+            defaultColors.add(textArea.getForeground());
+            defaultColors.add(notepadMenuBar.getForeground());
+            defaultColors.add(fileMenu.getForeground());
+            defaultColors.add(bottomPanel.getForeground());
+            defaultColors.add(bottomLabel.getForeground());
+            defaultColors.add(rowsCountTextArea.getForeground());
+
+            defaultColors.add(scrollPane.getVerticalScrollBar().getBackground());
+            defaultColors.add(defaultScrollColor);
+        }
 
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setVisible(true);
@@ -115,6 +167,12 @@ public class Notepad {
         formatMenu.add(wordWrapMenuItem);
         formatMenu.add(fontMenuItem);
 
+        themeMenu = new JMenu("Theme");
+        lightTheme = new JMenuItem("Light");
+        darkTheme = new JMenuItem("Dark");
+        themeMenu.add(lightTheme);
+        themeMenu.add(darkTheme);
+
         helpMenu = new JMenu("Help");
         helpMenuItem = new JMenuItem("Help");
         aboutMenuItem = new JMenuItem("About");
@@ -125,6 +183,7 @@ public class Notepad {
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
         menuBar.add(formatMenu);
+        menuBar.add(themeMenu);
         menuBar.add(helpMenu);
 
         setAllAccelerators();
@@ -190,14 +249,14 @@ public class Notepad {
 
             @Override
             public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() != KeyEvent.VK_ENTER) {
+                    isTextAreaContentEdited = true;
+                    textArea.getHighlighter().removeAllHighlights();
+                }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                isTextAreaContentEdited = true;
-                if (e.getKeyCode() != KeyEvent.VK_ENTER) {
-                    textArea.getHighlighter().removeAllHighlights();
-                }
             }
         });
 
@@ -465,8 +524,8 @@ public class Notepad {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JTextField previousTextField = new JTextField();
-                Object[] inputFields = {"Find what", previousTextField,
-                        "Replace with"};
+
+                Object[] inputFields = {"Find what", previousTextField, "Replace with"};
 
                 String newValue = JOptionPane.showInputDialog(frame, inputFields, "Enter replace values", JOptionPane.WARNING_MESSAGE);
                 String oldValue = previousTextField.getText();
@@ -493,8 +552,94 @@ public class Notepad {
         fontMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                FontSelector fontSelector = new FontSelector();
                 FontSelector.getFontManager();
+            }
+        });
+
+        lightTheme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (textArea != null) {
+                    textArea.setBackground(defaultColors.get(0));
+                    textArea.setCaretColor(defaultColors.get(6));
+                    textArea.setSelectedTextColor(Color.BLACK);
+                    notepadMenuBar.setBackground(defaultColors.get(1));
+                    fileMenu.setBackground(defaultColors.get(2));
+                    editMenu.setBackground(defaultColors.get(2));
+                    formatMenu.setBackground(defaultColors.get(2));
+                    themeMenu.setBackground(defaultColors.get(2));
+                    helpMenu.setBackground(defaultColors.get(2));
+                    bottomPanel.setBackground(defaultColors.get(3));
+                    bottomLabel.setBackground(defaultColors.get(4));
+                    rowsCountTextArea.setBackground(defaultColors.get(5));
+                    textArea.setForeground(defaultColors.get(7));
+                    notepadMenuBar.setForeground(defaultColors.get(8));
+                    fileMenu.setForeground(defaultColors.get(9));
+                    editMenu.setForeground(defaultColors.get(9));
+                    formatMenu.setForeground(defaultColors.get(9));
+                    themeMenu.setForeground(defaultColors.get(9));
+                    helpMenu.setForeground(defaultColors.get(9));
+                    bottomPanel.setForeground(defaultColors.get(10));
+                    bottomLabel.setForeground(defaultColors.get(11));
+                    rowsCountTextArea.setForeground(defaultColors.get(12));
+
+                    scrollPane.getVerticalScrollBar().setBackground(defaultColors.get(13));
+                    scrollPane.getHorizontalScrollBar().setBackground(defaultColors.get(13));
+
+                    scrollPane.getVerticalScrollBar().setUI(new MotifScrollBarUI() {
+                        @Override
+                        protected void configureScrollBarColors() {
+                            this.thumbColor = defaultScrollColor;
+                        }
+                    });
+
+                    scrollPane.getHorizontalScrollBar().setUI(new MotifScrollBarUI() {
+                        @Override
+                        protected void configureScrollBarColors() {
+                            this.thumbColor = defaultScrollColor;
+                        }
+                    });
+                }
+            }
+        });
+
+        darkTheme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (textArea != null) {
+                    Color darkColor = Color.decode("#383837");
+                    textArea.setBackground(darkColor);
+                    textArea.setForeground(Color.WHITE);
+                    textArea.setCaretColor(Color.WHITE);
+                    textArea.setSelectedTextColor(Color.WHITE);
+                    notepadMenuBar.setBackground(darkColor);
+                    fileMenu.setForeground(Color.WHITE);
+                    editMenu.setForeground(Color.WHITE);
+                    formatMenu.setForeground(Color.WHITE);
+                    themeMenu.setForeground(Color.WHITE);
+                    helpMenu.setForeground(Color.WHITE);
+                    bottomPanel.setBackground(darkColor);
+                    bottomLabel.setForeground(Color.WHITE);
+                    rowsCountTextArea.setBackground(darkColor);
+                    rowsCountTextArea.setForeground(Color.WHITE);
+
+                    scrollPane.getVerticalScrollBar().setBackground(darkColor);
+                    scrollPane.getHorizontalScrollBar().setBackground(darkColor);
+
+                    scrollPane.getVerticalScrollBar().setUI(new MotifScrollBarUI() {
+                        @Override
+                        protected void configureScrollBarColors() {
+                            this.thumbColor = Color.GRAY;
+                        }
+                    });
+
+                    scrollPane.getHorizontalScrollBar().setUI(new MotifScrollBarUI() {
+                        @Override
+                        protected void configureScrollBarColors() {
+                            this.thumbColor = Color.GRAY;
+                        }
+                    });
+                }
             }
         });
 

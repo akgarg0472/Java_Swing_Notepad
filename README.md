@@ -7,7 +7,7 @@ I have used only basic UI Elements of java AWT and swing to design the whole not
 This project has two classes - Notepad and FontSelector class
 Notepad class contains the main implementation and FontSelector class is used for the functionality of the Font selector UI where user can choose different font styles and font size etc
 
-(Implemented Dark mode in UI, still udner progress)
+(Implemented Dark mode in UI, still under progress)
 
 Although this is not the best notepad implementation and there are many improvements which can be done in the code but it totally depends on you that how you can optimize this code.
 
